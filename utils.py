@@ -1,11 +1,12 @@
 import pyvista as pv
+import numpy as np
+from scipy.stats import qmc
+import matplotlib.pyplot as plt
 
 # Check if running in a headless environment
 import os
 if os.environ.get("DISPLAY") is None:
     pv.start_xvfb()
-
-import numpy as np
 
 class Visualizer:
     def __init__(self):
@@ -135,10 +136,6 @@ class Visualizer:
         """
         return self.plotter.show(jupyter_backend="html")
 
-
-
-
-
 def binomial_coefficient(n, k):
     """
     Compute the binomial coefficient
@@ -154,7 +151,6 @@ def binomial_coefficient(n, k):
         return 1
     else:
         return round(n/k * binomial_coefficient(n-1, k-1))
-
 
 def spline_interpolation(start_point, control_point, end_point, u):
     """
@@ -179,3 +175,40 @@ def spline_interpolation(start_point, control_point, end_point, u):
         point_sum += bernstein_value * control_points[i]  # Sum the control point contributions
 
     return point_sum
+
+def read_input_from_file(filename):
+    """
+    Reads vessel radius and control points from a file for multiple models.
+
+    The file should contain lines with the format:
+    vessel_radius control_point_x control_point_z
+
+    Parameters:
+    filename (str): The path to the input file.
+
+    Returns:
+    list of tuples: Each tuple contains:
+        - vessel_radius (float): The radius of the vessel.
+        - control_point (np.array): A 3D numpy array [x, y, z] where y is set to 0 by default.
+    
+    Example:
+    If the file contains:
+    1.5 2.0 3.0
+    2.0 3.5 4.5
+    
+    The function will return:
+    [(1.5, array([2.0, 0.0, 3.0])), (2.0, array([3.5, 0.0, 4.5]))]
+    """
+    with open(filename, 'r') as file:
+        lines = file.readlines()
+
+    # Parse each line into a dictionary of parameters for each model
+    model_params = []
+    for line in lines:
+        values = line.split()  # Assuming space-separated or comma-separated values
+        vessel_radius = float(values[0])
+        # The control point can have positions on both X and Z, Y is kept at 0
+        control_point = np.array([float(values[1]), 0.0, float(values[2])])
+        model_params.append((vessel_radius, control_point))
+
+    return model_params
