@@ -1,7 +1,5 @@
 import pyvista as pv
 import numpy as np
-from scipy.stats import qmc
-import matplotlib.pyplot as plt
 
 # Check if running in a headless environment
 import os
@@ -167,7 +165,7 @@ def spline_interpolation(start_point, control_point, end_point, u):
     """
     point_sum = np.array([0.0, 0.0, 0.0])  # Sum of control point contributions
     control_points = np.array([start_point, control_point, end_point])  # Array of control points
-    degree = len(control_points) - 1  # Degree of the Bernstein polynomial
+    degree = len(control_points)  # Degree of the Bernstein polynomial
 
     for i in range(degree + 1):
         # Compute Bernstein basis polynomial B_i^n(u)
