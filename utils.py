@@ -85,7 +85,8 @@ class Visualizer:
         # Calculate the spline points and connectivity
         self.start_point = np.array([0, 0, 0], dtype=np.float64)
         self.end_point = np.array([0, 0, 50], dtype=np.float64)
-        points = np.array([spline_interpolation(self.start_point, control_point, self.end_point, u) for u in np.linspace(0, 1, 100)])
+        num_divisions = 100
+        points = np.array([spline_interpolation(self.start_point, control_point, self.end_point, u) for u in np.arange(0, 1 + (1 / num_divisions), 1 / num_divisions)])
         connectivity = np.arange(0, len(points), dtype=np.int32)
         connectivity = np.insert(connectivity, 0, len(points))
 
@@ -151,6 +152,7 @@ def binomial_coefficient(n, k):
         return round(n/k * binomial_coefficient(n-1, k-1))
 
 def spline_interpolation(start_point, control_point, end_point, u):
+    
     """
     Compute the spline interpolation between three points
     
@@ -165,13 +167,15 @@ def spline_interpolation(start_point, control_point, end_point, u):
     """
     point_sum = np.array([0.0, 0.0, 0.0])  # Sum of control point contributions
     control_points = np.array([start_point, control_point, end_point])  # Array of control points
-    degree = len(control_points)  # Degree of the Bernstein polynomial
+    degree = len(control_points) # Degree of the Bernstein polynomial
 
-    for i in range(degree + 1):
+    for i in range(1,degree+1):
         # Compute Bernstein basis polynomial B_i^n(u)
-        bernstein_value = binomial_coefficient(degree, i) * (u ** i) * ((1 - u) ** (degree - i))
-        point_sum += bernstein_value * control_points[i]  # Sum the control point contributions
-
+        bernstein_value = binomial_coefficient(degree, (i-1)) * (u ** (i-1)) * ((1 - u) ** (degree - (i-1)))
+        point_sum += bernstein_value * control_points[(i-1)]  # Sum the control point contributions
+    bernstein_value = binomial_coefficient(degree, degree) * (u ** degree)    
+    point_sum += bernstein_value * control_points[degree - 1]
+  
     return point_sum
 
 def read_input_from_file(filename):
