@@ -155,7 +155,7 @@ class Visualizer:
         """
 
         num_divisions = 100
-        self.vessel_centerline.points = np.array([spline_interpolation(self.start_point, control_point, self.end_point, u) for u in np.arange(0, 1 + (1 / num_divisions), 1 / num_divisions)])
+        self.vessel_centerline.points = np.array([spline_interpolation(self.start_point, new_control_point, self.end_point, u) for u in np.arange(0, 1 + (1 / num_divisions), 1 / num_divisions)])
         self.vessel_tube.points = self.vessel_centerline.tube(radius=new_radius, n_sides=40).points
         self.vessel_controlpoint.points = new_control_point.reshape(1, 3)
         self.deploy_site.points = spline_interpolation(self.start_point, new_control_point, self.end_point, new_deploy_site).reshape(1, 3)
