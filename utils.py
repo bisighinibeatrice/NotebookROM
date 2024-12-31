@@ -16,7 +16,7 @@ class Visualizer:
         self.plotter.add_axes()
         self.plotter.view_zx()
 
-    def add_stent_from_file(self, points_file, connectivity_file, radius=0.02):
+    def add_stent_from_file(self, points_file, connectivity_file, radius=0.02, color="black"):
         """
         Add stent mesh from file
         
@@ -45,7 +45,7 @@ class Visualizer:
 
         self.plotter.view_zx()
 
-    def add_stent(self, points, connectivity, radius=0.02):
+    def add_stent(self, points, connectivity, radius=0.02, color="black"):
         """
         Add a stent mesh to the plotter using a set of points and connectivity.
 
@@ -72,7 +72,7 @@ class Visualizer:
         self.stent_tube_mesh = self.stent_mesh.tube(radius=radius)
 
         # Add the stent tube mesh to the plotter with a black color
-        self.plotter.add_mesh(self.stent_tube_mesh, color="black")
+        self.plotter.add_mesh(self.stent_tube_mesh, color)
 
         # Set the plot view to the zx-plane for better visualization
         self.plotter.view_zx()
