@@ -7,6 +7,7 @@ if os.environ.get("DISPLAY") is None:
     pv.start_xvfb()
 
 class Visualizer:
+
     def __init__(self):
         """
         Visualizer class to plot the stent and vessel in 3D
@@ -15,12 +16,12 @@ class Visualizer:
         self.plotter.add_axes()
         self.plotter.view_zx()
 
-    def add_stent_from_file(self, point_file, connectivity_file, radius=0.02):
+    def add_stent_from_file(self, points_file, connectivity_file, radius=0.02):
         """
         Add stent mesh from file
         
                 Parameters:
-                    point_file (str): Path to the point cloud file
+                    points_file (str): Path to the point cloud file
                     connectivity_file (str): Path to the connectivity file
                     radius (float): Radius of the stent tube
 
@@ -28,7 +29,7 @@ class Visualizer:
         self.stent_radius = radius
 
         # Load point cloud data and connectivities
-        points = np.loadtxt(point_file)
+        points = np.loadtxt(points_file)
         connectivity = np.loadtxt(connectivity_file).astype(np.int32) 
         connectivity = connectivity - np.min(connectivity)  # Ensure that the connectivity starts from 0
 
@@ -42,6 +43,38 @@ class Visualizer:
         # Plot the mesh
         self.plotter.add_mesh(self.stent_tube_mesh, color="black")
 
+        self.plotter.view_zx()
+
+    def add_stent(self, points, connectivity, radius=0.02):
+        """
+        Add a stent mesh to the plotter using a set of points and connectivity.
+
+        Parameters:
+            points (ndarray): Array of 3D coordinates (N, 3) representing the points in the stent mesh.
+            connectivity (ndarray): Array of connectivity information (M, 2) representing the edges 
+                                    between the points, where each row defines a connection between two points.
+            radius (float): Radius of the tube that represents the stent. Default is 0.02.
+
+        """
+        # Set the radius of the stent
+        self.stent_radius = radius
+        
+        # Adjust connectivity indices to start from 0 (vtk requires connectivity starting at 0)
+        connectivity = connectivity - np.min(connectivity)
+
+        # Add a column to the connectivity to indicate the number of points per edge (required by vtk)
+        connectivity = np.hstack((np.ones((connectivity.shape[0], 1), dtype=np.int32)*2, connectivity))
+
+        # Create a PolyData object from the points and connectivity data
+        self.stent_mesh = pv.PolyData(points, lines=connectivity)
+        
+        # Create the stent tube mesh by applying the tube filter to the PolyData
+        self.stent_tube_mesh = self.stent_mesh.tube(radius=radius)
+
+        # Add the stent tube mesh to the plotter with a black color
+        self.plotter.add_mesh(self.stent_tube_mesh, color="black")
+
+        # Set the plot view to the zx-plane for better visualization
         self.plotter.view_zx()
 
     def update_stent(self, new_points):
@@ -59,14 +92,14 @@ class Visualizer:
 
         self.plotter.view_zx()
 
-    def update_stent_from_file(self, point_file):
+    def update_stent_from_file(self, points_file):
         """
         Update the stent mesh with new points from file
         
                 Parameters:
-                    point_file (str): Path to the new point cloud file
+                    points_file (str): Path to the new point cloud file
         """
-        new_points = np.loadtxt(point_file)
+        new_points = np.loadtxt(points_file)
         self.update_stent(new_points)
 
     def add_vessel(self, control_point=np.array([0, 0, 25], dtype=np.float64), vessel_radius=10, deploy_site = 0.5, vessel_opacity=0.5):
@@ -127,7 +160,6 @@ class Visualizer:
         self.deploy_site.points = spline_interpolation(self.start_point, new_control_point, self.end_point, new_deploy_site).reshape(1, 3)
 
         self.plotter.view_zx()
-
 
     def show(self):
         """
